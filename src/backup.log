@@ -1,0 +1,239 @@
+import React from 'react'
+import {useState} from 'react';
+
+const Content2 = () => {
+    // useState 훅의 사용.
+    // 아래의 경우 앞의 name은 현재 시점의 상태를 제공
+    // 뒤의 setName은 그 상태를 설정하는데 사용.
+    // 개념적으로는 전자가 게터, 후자가 세터 같은 느낌.
+    // 그리고 useState뒤의 괄호 안에 넣는 값은 해당 컴포넌트가
+    // 최초 로드시 제공할 디폴트 값 내지는 디폴트 상태라고 할 수 있겠다.
+    const [name, setName] = useState('Dave');
+    const [count, setCount] = useState(0);
+
+    const handleNameChange = () => {
+        const names = ['Bob', 'Kevin', 'Dave'];
+        const int = Math.floor(Math.random() * 3);
+        // 렌덤한 넘버를 기반으로 위의 배열 중 이름을 임의적으로 호출.
+        // return names[int]; useState에 맞게 변형하기 전의 원래 형태.
+        setCount(2);
+        //useState를 쓰는데 적합하도록 이 부분도 아래처럼 바꿔준다.
+        // 그래서 단순히 names[int]의 값을 반환하는게 아니라 해당 값을
+        // setName 함수에 전달해주는 형태로 바꿨다.
+        setName(names[int]); 
+    };
+
+    // 아래의 코드를 실행하는 과정에서 마지막에 count를 찍어보면
+    // 1이나 2가 나오는게 아니고 처음엔 setCount에 제공한 디폴트
+    // 값인 0이 나오고 그 다음에서야 누를 때마다 차례로 1씩 증가된
+    // 값을 찍어는 모습이 관찰된다.
+    // 여기서 개념적으로 헷갈리지 말아야 할 것은 useState의 경우
+    // 철저하게 '현'시점의 특정 상태값을 관찰하는데 그 목적이 있다는 
+    // 것이다. 다시 말해 아래와 같이 아무리 setCount를 통해 count를
+    // 증가시키고 그 직후 증가된 값을 console.log를 통해 찍어보려고
+    // 해도 setCount에 가지고 들어왔을 시점의 count 자체는
+    // 아직 그 값의 변화가 없는 상태이므로 그 현시점의 count
+    // 상태값을 찍어봐야 1을 증가시키기 이전의 기존 값을
+    // 찍어줄 뿐인 것이다.
+    // 그러므로 처음 count값을 찍어주는 console.log부터 0이 아닌 증가
+    // 시킨 다른 값을 찍어주고자 한다면 일차적으로 다른 함수나 다른 이벤
+    // 에서 setCount를 실행시켜서 값을 변경해주고 그 함수나 이벤트가
+    // 종료를 맞이한 이후 별도로 count의 값을 console.log를
+    // 통해 찍어보면 0이 아닌 변경된 값으로(이 경우엔 2) 찍힌다.
+    const handleClick = () => {
+        //setCount(2);
+        //setCount(count + 1);
+        console.log(count);
+    };
+
+    const handleClick2 = (name) => {
+        console.log(`${name} clicked`);
+    };
+
+    const handleClick3 = (e, t) => {
+        console.log(e.target.innerText);
+        console.log(t);
+    };
+
+    return (
+        <main>
+            {/*리액트에서 필요할 경우 더블클릭에 대한 처리도 가능*/}
+            <p onDoubleClick={handleClick}>
+                {/*만약에 아래의 name 대신에 handleNameChange() 라고
+             할 경우 함수명 끝에 ()가 있으므로최초 로딩시에 단
+             한번만자동 실행되는 성격을 갖는다. 이는 리액트적 방식이
+             아니며, 가능하면 입력이 들어오면 이에 대해 페이지 전체를
+             재로딩 하지 않고 그냥 리액트가 그 부분에 있어 재랜더를
+             하는 쪽으로 하고자 하는 사고 방식이 리액트적인 방식이고
+             이를 위해선 아래와 같은 형태로 진행을 하는게 바람직하다.*/}
+                Hello {name}!
+            </p>
+            <button onClick={handleNameChange}>change name</button>
+            <button onClick={handleClick}>1click it</button>
+            <button onClick={() => handleClick2('Dave')}>2click it</button>
+            {/*여기서 착각하지 말아야 하는게 기본적인 button 요소의 onClick의 시그니쳐는 전달인자 한 개를
+        받는 함수지만 그게 아래에서와 같이 굳이 handleClick 함수와 시그니쳐가 일치할 필요는 없다는 것이다.
+        아래의 애로우 함수는 onClick에서 요구하는 시그니쳐에 맞춰 그저 handleClick3에 전달할 전달인자를
+        인식시키 위한 래퍼함수에 불과할 뿐이다. 실제로 아래의 경우처럼 handleClick3 함수의 매개변수를 2개인
+        형태로 만들어놔도 정작 onClick 등록시켜 쓸 함수의 시그니쳐만 '(전달인자) => void'의 형태를 준수한다면
+        크게 문제될 건 없다. 종종 위의 handleClick2의 경우처럼 onClick에 등록하는 (래퍼 역할을 하는) 함수와
+        그 안에 있는 실질적으로 쓰이는 handleClick2 함수의 시그니처가 같아야만 하는 것으로 착각해서 2중으로
+        시그니처를 굳이 통일하려는 모습을 보이는 경우가 있는데 아래의 예시처럼 굳이 그럴 필요가 없는 것이다.*/}
+            <button onClick={(e) => handleClick3(e, 'test')}>3click it</button>
+        </main>
+    )
+}
+
+export default Content2
+
+
+
+//import logo from './logo.svg';
+import './App.css';
+import Header from './Header';
+import AddItem from './AddItem';
+import SearchItem from './SearchItem';
+import Content2 from './Content2';
+import Footer1 from './Footer1';
+import {useState, useEffect} from 'react';
+
+
+function App() {
+  /*const [items,setItems] = useState([
+      {
+          id: 1,
+          checked: true,
+          item: "One half pound bag of Cocoa Covered Almonds Unsalted"
+      }, {
+          id: 2,
+          checked: false,
+          item: "Item2"
+      }, {
+          id: 3,
+          checked: false,
+          item: "Item3"
+      }
+  ]);*/
+
+  const API_URL = 'http://localhost:3500/items';
+
+  // 아래의 코드 끝에서와 같이 빈 배열을 넣어주는건 만약에 이 서비스의
+  // 최초 사용자가 로컬 저장소에 아무것도 갖고 있지 않은 초기상태에서
+  // 처음 쓰게 됐을 때 그러한 null 상태에 대해 코드가 작동하게 되고
+  // 그 과정에서 null에 대해 filter를 걸게 되면서 생길 오류를 방지하기
+  // 위한 일종의 최초시점을 위한 초기값의 성격도 있다. 결국 아래의 코드
+  // 에선 만약에 Json.parse 부분이 null인 경우라면 []가 대입되게 되는
+  // 형태다.
+  // 이는 심지어 디버깅 화면의 application에서 수동으로 직접
+  // 로컬 저장소의 shoppinglist를 삭제했어도 새로고침 해주면
+  // 다시 빈 shoppinglist를 제공해주는 형태로 견고함을 유지시켜
+  // 주는 효과도 갖는다.
+  const [items,setItems] = useState(
+    JSON.parse(localStorage.getItem('shoppinglist') || []));
+
+  const [newItem, setNewItem] = useState('');
+  const [search, setSearch] = useState('');
+
+  // 기본적으로 useEffect는 dependency인 두 번째 전달인자의
+  // 변화가 있을 경우 첫 번째 전달인자로 넘긴 함수를 실행
+  // 시키는 형태이므로 첫 로딩 때 두 번째 전달인자의 값에
+  // 최초의 변화가 생겼다고 볼 수 있으므로 로딩시 작동하는
+  // 형태의 로직이 된다.
+  useEffect(() => {
+    localStorage.setItem(
+      'shoppinglist', JSON.stringify(items));
+  }, [items])
+
+  const addItem = (item) => {
+    const id = items.length ? 
+      items[items.length - 1].id + 1 : 1;
+    const myNewItem = { id, checked: false, item };
+    const listItems = [...items, myNewItem];
+    setItems(listItems);
+  }
+
+  const handleCheck = (id) => {
+      const listItems = items.map(
+          (item) => item.id === id ? 
+          { ...item, checked: !item.checked } : item);
+          setItems(listItems);
+  }
+
+  const handleDelete = (id) => {
+      //console.log(id);
+      const listItems = items.filter(
+          (item) => item.id !== id);
+          setItems(listItems);
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // 필수라고 지정해놨기 때문에 빈 문자열의 입력이 있을 수는 없겠지만
+    // 이에 대해 아래와 같이 체크해볼 수는 있다.
+    if (!newItem) {
+      return;
+    }
+
+    // addItem
+    addItem(newItem);
+    setNewItem('')
+
+  }
+
+  return(
+    <div className='App'>
+      <Header title='Grocery List'/>
+      <AddItem
+        newItem = {newItem}
+        setNewItem = {setNewItem}
+        handleSubmit = {handleSubmit}
+      />
+      <SearchItem
+        search={search}
+        setSearch={setSearch}
+      />
+      <Content2
+        items={items.filter(item => (
+          (item.item).toLowerCase()).includes(
+            search.toLowerCase()))}
+        handleCheck={handleCheck}
+        handleDelete={handleDelete}
+      />
+      <Footer1 
+        length={items.length}
+      />
+    </div>
+  );
+    
+    
+}
+
+export default App;
+
+Content2.js
+import React from 'react'
+import ItemList from './ItemList';
+
+//import {FaTrashAlt} from 'react-icons/fa';
+
+const Content2 = ({ items, handleCheck, handleDelete}) => {
+
+    return (
+        <main>
+            {items.length ? (
+                <ItemList
+                    items={items}
+                    handleCheck={handleCheck}
+                    handleDelete={handleDelete}>
+
+                </ItemList>
+                ):(
+                    <p style={{marginTop:'2rem'}}>
+                        your list is empty
+                    </p>
+                )}
+        </main>
+    )
+}
+
+export default Content2
